@@ -15,7 +15,7 @@ from ..core.utils.taxes import display_gross_prices
 from ..discount.models import NotApplicable, Voucher
 from ..shipping.models import ShippingMethodCountry
 from ..shipping.utils import get_shipment_options, get_taxed_shipping_price
-from .models import Cart, PaymentMethod
+from .models import Cart
 
 
 class QuantityField(forms.IntegerField):
@@ -365,9 +365,3 @@ class CartVoucherForm(forms.ModelForm):
             if voucher.translated.name != voucher.name else '')
         self.instance.discount_amount = self.cleaned_data['discount_amount']
         return super().save(commit)
-
-
-class PaymentMethodForm(forms.ModelForm):
-    class Meta:
-        model = PaymentMethod
-        fields = ['variant', 'is_active', 'total', 'charge_status']
