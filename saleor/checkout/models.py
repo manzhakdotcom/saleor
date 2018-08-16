@@ -15,7 +15,6 @@ from ..core.utils.taxes import ZERO_TAXED_MONEY
 from ..shipping.models import ShippingMethodCountry
 from django.utils.translation import pgettext_lazy
 from ..order.models import Order
-from . import PaymentMethodChargeStatus, TransactionType
 
 CENTS = Decimal('0.01')
 
