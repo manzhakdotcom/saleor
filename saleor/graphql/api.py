@@ -64,6 +64,10 @@ from .shipping.types import ShippingMethod
 from .shipping.mutations import (
     ShippingMethodCreate, ShippingMethodDelete, ShippingMethodUpdate,
     ShippingPriceCreate, ShippingPriceDelete, ShippingPriceUpdate)
+from .utils import get_node
+from .checkout.types import CheckoutLine, Checkout
+from .checkout.mutations import CheckoutLineCreate, CheckoutCreate
+from .checkout.resolvers import resolve_checkouts
 
 
 class Query(graphene.ObjectType):
@@ -87,6 +91,14 @@ class Query(graphene.ObjectType):
         Collection, query=graphene.String(
             description=DESCRIPTIONS['collection']),
         description='List of the shop\'s collections.')
+    checkouts = DjangoFilterConnectionField(
+        Checkout, description='List of checkouts',
+        filterset_class=DistinctFilterSet)
+    checkout_lines = DjangoFilterConnectionField(
+        CheckoutLine, description='List of checkout lines',
+        filterset_class=DistinctFilterSet)
+    checkout_line = graphene.Field(CheckoutLine, id=graphene.Argument(graphene.ID))
+
     menu = graphene.Field(
         Menu, id=graphene.Argument(graphene.ID),
         description='Lookup a menu by ID.')
@@ -107,19 +119,11 @@ class Query(graphene.ObjectType):
             description=DESCRIPTIONS['order']),
         description='List of the shop\'s orders.')
     page = graphene.Field(
-<<<<<<< HEAD
         Page, id=graphene.Argument(graphene.ID), slug=graphene.String(),
         description='Lookup a page by ID or by slug.')
     pages = DjangoFilterConnectionField(
         Page, filterset_class=DistinctFilterSet, query=graphene.String(
             description=DESCRIPTIONS['page']),
-=======
-        Page, id=graphene.Argument(graphene.ID), slug=graphene.String(
-            description=DESCRIPTIONS['page']),
-        description='Lookup a page by ID or by slug.')
-    pages = DjangoFilterConnectionField(
-        Page, filterset_class=DistinctFilterSet, query=graphene.String(),
->>>>>>> Undo style formatting by yapf
         description='List of the shop\'s pages.')
     payment = graphene.Field(Payment, id=graphene.Argument(graphene.ID))
     payment_client_token = graphene.Field(
@@ -178,6 +182,12 @@ class Query(graphene.ObjectType):
 
     def resolve_categories(self, info, level=None, query=None, **kwargs):
         return resolve_categories(info, level=level, query=query)
+
+    def resolve_cart_line(self, info, id):
+        return get_node(info, id, only_type=CheckoutLine)
+
+    def resolve_checkouts(self, info, query=None, **kwargs):
+        resolve_checkouts(info, query)
 
     def resolve_collection(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, Collection)
@@ -295,6 +305,9 @@ class Mutations(graphene.ObjectType):
     address_update = AddressUpdate.Field()
     address_delete = AddressDelete.Field()
 
+    checkout_create = CheckoutCreate.Field()
+    checkout_line_create = CheckoutLineCreate.Field()
+
     collection_create = CollectionCreate.Field()
     collection_update = CollectionUpdate.Field()
     collection_delete = CollectionDelete.Field()
@@ -369,6 +382,5 @@ class Mutations(graphene.ObjectType):
 
     variant_image_assign = VariantImageAssign.Field()
     variant_image_unassign = VariantImageUnassign.Field()
-
 
 schema = graphene.Schema(Query, Mutations)
