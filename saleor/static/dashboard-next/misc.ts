@@ -102,3 +102,6 @@ export function renderCollection<T>(
   }
   return collection.map(renderItem);
 }
+
+export const removeDoubleSlashes = (url: string) =>
+  url.replace(/([^:]\/)\/+/g, "$1");
