@@ -162,6 +162,24 @@ def test_query_tax_rate(user_api_client, admin_api_client, vatlayer):
         reverse('api'), {'query': query, 'variables': variables})
     assert_no_permission(response)
 
+def test_query_reduced_tax_rate_goods(user_api_client, admin_api_client, vatlayer):
+    query = """
+    query {
+        shop {
+            taxReducedRateGoods
+        }
+    }
+    """
+    response = admin_api_client.post(reverse('api'), {'query': query})
+    content = get_graphql_content(response)
+    assert 'errors' not in content
+    data = content['data']['shop']
+    from saleor.core.i18n import VAT_RATE_TYPE_TRANSLATIONS
+    assert data['taxReducedRateGoods'] == list(VAT_RATE_TYPE_TRANSLATIONS.keys())
+
+    response = user_api_client.post(reverse('api'), {'query': query})
+    assert_no_permission(response)
+
 
 def test_query_languages(settings, user_api_client):
     query = """

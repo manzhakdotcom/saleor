@@ -5,6 +5,7 @@ from django_prices_vatlayer import models as vatlayer_models
 from graphql_jwt.decorators import permission_required
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
+from ....core.i18n import VAT_RATE_TYPE_TRANSLATIONS
 from ....core.permissions import get_permissions
 from ....site import models as site_models
 from ...utils import format_permissions_for_display
@@ -60,6 +61,9 @@ class Shop(graphene.ObjectType):
     tax_rate = graphene.Field(
         VAT, description='VAT tax rates for a specific country.',
         required=True, country_code=graphene.Argument(graphene.String))
+    tax_reduced_rate_goods = graphene.List(
+        graphene.String,
+        description='List of all types of goods applicable to reduced tax rate.')
 
     class Meta:
         description = '''
@@ -106,6 +110,10 @@ class Shop(graphene.ObjectType):
 
     def resolve_phone_prefixes(self, info):
         return list(COUNTRY_CODE_TO_REGION_CODE.keys())
+
+    @permission_required('site.manage_settings')
+    def resolve_tax_reduced_rate_goods(self, info):
+        return list(VAT_RATE_TYPE_TRANSLATIONS.keys())
 
     @permission_required('site.manage_settings')
     def resolve_tax_rates(self, info):
