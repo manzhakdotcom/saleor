@@ -166,7 +166,10 @@ def test_query_reduced_tax_rate_goods(user_api_client, admin_api_client, vatlaye
     query = """
     query {
         shop {
-            taxReducedRateGoods
+            taxReducedRateGoods {
+                code,
+                name
+            }
         }
     }
     """
@@ -175,7 +178,7 @@ def test_query_reduced_tax_rate_goods(user_api_client, admin_api_client, vatlaye
     assert 'errors' not in content
     data = content['data']['shop']
     from saleor.core.i18n import VAT_RATE_TYPE_TRANSLATIONS
-    assert data['taxReducedRateGoods'] == list(VAT_RATE_TYPE_TRANSLATIONS.keys())
+    assert len(data['taxReducedRateGoods']) == len(VAT_RATE_TYPE_TRANSLATIONS)
 
     response = user_api_client.post(reverse('api'), {'query': query})
     assert_no_permission(response)

@@ -30,6 +30,11 @@ class Domain(graphene.ObjectType):
         description = 'Represents shop\'s domain.'
 
 
+class TaxReducedRateGoodsDisplay(graphene.ObjectType):
+    code = graphene.String(description='Goods code name')
+    name = graphene.String(description='Translated name')
+
+
 class Shop(graphene.ObjectType):
     authorization_keys = graphene.List(
         AuthorizationKey, description='List of configured authorization keys.',
@@ -62,8 +67,8 @@ class Shop(graphene.ObjectType):
         VAT, description='VAT tax rates for a specific country.',
         required=True, country_code=graphene.Argument(graphene.String))
     tax_reduced_rate_goods = graphene.List(
-        graphene.String,
-        description='List of all types of goods applicable to reduced tax rate.')
+        TaxReducedRateGoodsDisplay,
+        description='List of all types of goods applicable for reduced tax rates.')
 
     class Meta:
         description = '''
@@ -113,7 +118,9 @@ class Shop(graphene.ObjectType):
 
     @permission_required('site.manage_settings')
     def resolve_tax_reduced_rate_goods(self, info):
-        return list(VAT_RATE_TYPE_TRANSLATIONS.keys())
+        return [
+            TaxReducedRateGoodsDisplay(code=rate, name=name)
+            for rate, name in VAT_RATE_TYPE_TRANSLATIONS.items()]
 
     @permission_required('site.manage_settings')
     def resolve_tax_rates(self, info):
